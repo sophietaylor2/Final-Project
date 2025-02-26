@@ -1,5 +1,49 @@
 ---
-title: "Final Project"
+title: "The Effect of Extreme Poverty on Womens Fertility Rates"
+author: "Ainsley Forster, Sophia Taylor"
+date: "`r Sys.Date()`"
+format: html
+theme: cosmo
+embed-resources: true
+code-tools: true
+toc: true
+editor: source
+execute: 
+  self-contained: true
+  echo: true
+  code-fold: true
+  message: false
+  warning: false
 ---
 
-#Sophia
+## Introduction
+```{r}
+#| label: load-and-clean-data
+#| code-fold: true
+#| code-summary: "Show load-and-clean-data code"
+
+library(tidyverse)
+library(readr)
+
+data_children_per_woman <- read_csv("children_per_woman_total_fertility.csv") |>
+  pivot_longer(cols = "1800":"2100",
+               names_to = "year",
+               values_to = "children_per_woman")
+
+data_extreme_poverty_rate <- read_csv("gm_epov_rate.csv") |>
+  pivot_longer(cols = "1800":"2100",
+               names_to = "year",
+               values_to = "extreme_poverty_rate")
+
+clean_data <- data_children_per_woman |>
+  full_join(data_extreme_poverty_rate, by = c("country", "year")) |>
+  drop_na()
+
+```
+
+- write detailed variable descriptions
+- hypothesized relationship (and any outside references)
+- data cleaning process and decisions
+
+
+
