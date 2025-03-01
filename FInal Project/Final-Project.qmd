@@ -25,12 +25,12 @@ execute:
 library(tidyverse)
 library(readr)
 
-data_children_per_woman <- read_csv("children_per_woman_total_fertility.csv") |>
+data_children_per_woman <- read_csv("/Users/sophietaylor/Documents/STAT 331/children_per_woman_total_fertility.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "children_per_woman")
 
-data_extreme_poverty_rate <- read_csv("gm_epov_rate.csv") |>
+data_extreme_poverty_rate <- read_csv("/Users/sophietaylor/Documents/STAT 331/gm_epov_rate.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "extreme_poverty_rate")
@@ -41,9 +41,19 @@ clean_data <- data_children_per_woman |>
 
 ```
 
-- write detailed variable descriptions
-- hypothesized relationship (and any outside references)
-- data cleaning process and decisions
+Data and Variables:
+This project examines the relationship between extreme poverty and fertility rates using Gapminder data:
+Children per Woman (Total Fertility Rate): The average number of children a woman has and Extreme Poverty Rate: The percentage of people living below the international poverty line.
 
+Hypothesis:
+We hypothesize that higher poverty rates correlate with higher fertility rates due to economic necessity and limited access to contraception. Declining poverty is expected to lower fertility due to improved education, healthcare, and economic opportunities.
+
+Data Cleaning Steps:
+1. Reshaped Data: Converted from wide to long format using pivot_longer().
+2. Merged Datasets: Joined on country and year.
+3. Handled Missing Values: Removed incomplete observations with drop_na().
+
+Considerations:
+There is limited historical data. As well, other socioeconomic factors can also impact fertility but are not included.
 
 
