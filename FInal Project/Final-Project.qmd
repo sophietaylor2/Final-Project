@@ -24,13 +24,16 @@ execute:
 
 library(tidyverse)
 library(readr)
+library(gganimate)
+library(gifski)
+library(knitr)
 
-data_children_per_woman <- read_csv("/Users/sophietaylor/Documents/STAT 331/children_per_woman_total_fertility.csv") |>
+data_children_per_woman <- read_csv("children_per_woman_total_fertility.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "children_per_woman")
 
-data_extreme_poverty_rate <- read_csv("/Users/sophietaylor/Documents/STAT 331/gm_epov_rate.csv") |>
+data_extreme_poverty_rate <- read_csv("gm_epov_rate.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "extreme_poverty_rate")
@@ -55,5 +58,94 @@ Data Cleaning Steps:
 
 Considerations:
 There is limited historical data. As well, other socioeconomic factors can also impact fertility but are not included.
+
+## Data Visualization
+```{r}
+#| label: poverty-and-fertility-over-time
+#| code-fold: true
+#| code-summary: "Show poverty-and-fertility-over-time code"
+
+poverty_and_fertility_over_time <- clean_data |>
+  ggplot(mapping = aes(x = extreme_poverty_rate,
+                       y = children_per_woman)
+         ) +
+  geom_point(aes(group = seq_along(year))) + 
+  transition_states(year,
+                    transition_length = 1,
+                    state_length = 1
+                    )+
+  theme_light()+
+  labs(title = "Extreme Poverty and Womens Fertility Over Time",
+       subtitle = "Fertility Rate (children per woman)",
+       x = "Extreme Poverty Rate (%)",
+       y = "")+
+  geom_text(aes(x = 85, y = 1.5, label = paste("Year:", year)), 
+            size = 5)
+
+animate(poverty_and_fertility_over_time)
+```
+
+
+```{r}
+#| label: poverty-vs-fertility-rates
+#| code-fold: true
+#| code-summary: "Show poverty-vs-fertility-rates code"
+
+clean_data2 <- clean_data |>
+  group_by(country) |>
+  summarise(mean_fertility = mean(children_per_woman),
+            mean_poverty = mean(extreme_poverty_rate)
+            )
+
+poverty_vs_fertility_rates <- clean_data2 |>
+  ggplot(mapping = aes(x = mean_poverty,
+                       y = mean_fertility)
+         ) +
+  geom_point() +
+  theme_light()+
+  labs(title = "Extreme Poverty vs. Womens Fertility",
+       subtitle = "Fertility Rate (children per woman)",
+       x = "Extreme Poverty Rate (%)",
+       y = "")
+
+plot(poverty_vs_fertility_rates)
+
+```
+
+## Linear Regression
+
+```{r}
+#| label: SLR
+#| code-fold: true
+#| code-summary: "Show SLR code"
+
+slr_model = lm(mean_fertility ~ mean_poverty, data = clean_data2)
+
+print(paste("Fertility_Rate =",
+            round(coef(slr_model)[1], 3),
+            "+",
+            round(coef(slr_model)[2], 3),
+            "* Poverty_Rate")
+      )
+```
+
+
+## Model Fit
+
+```{r}
+var_in_response <- var(clean_data2$mean_fertility)
+var_in_fitted <- var(fitted(slr_model))
+var_in_residuals <- var(slr_model$residuals)
+
+variation_table <- data.frame(
+  "Variance Type" = c("Response", "Fitted", "Residuals"),
+  "Variance Value" = c(var_in_response, var_in_fitted, var_in_residuals)
+  )
+
+print(variation_table)
+
+```
+
+
 
 
