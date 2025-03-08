@@ -28,12 +28,12 @@ library(gganimate)
 library(gifski)
 library(knitr)
 
-data_children_per_woman <- read_csv("children_per_woman_total_fertility.csv") |>
+data_children_per_woman <- read_csv("/Users/sophietaylor/Documents/STAT 331/children_per_woman_total_fertility.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "children_per_woman")
 
-data_extreme_poverty_rate <- read_csv("gm_epov_rate.csv") |>
+data_extreme_poverty_rate <- read_csv("/Users/sophietaylor/Documents/STAT 331/gm_epov_rate.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "extreme_poverty_rate")
@@ -85,6 +85,7 @@ poverty_and_fertility_over_time <- clean_data |>
 animate(poverty_and_fertility_over_time)
 ```
 
+The animated visualization illustrates how extreme poverty and fertility rates change over time. The animation reveals a general downward trend in both variables, indicating that as time progresses, fertility rates and poverty levels tend to decrease. This supports the hypothesis that economic development and improved access to resources contribute to lower fertility rates.
 
 ```{r}
 #| label: poverty-vs-fertility-rates
@@ -112,6 +113,8 @@ plot(poverty_vs_fertility_rates)
 
 ```
 
+The scatterplot demonstrates a positive relationship between extreme poverty rates and fertility rates across countries. Countries with higher poverty rates tend to have higher fertility rates, whereas countries with lower poverty rates tend to have fewer children per woman. The spread of points suggests some variability, but the overall trend indicates that poverty is a significant influence on fertility.
+
 ## Linear Regression
 
 ```{r}
@@ -129,10 +132,14 @@ print(paste("Fertility_Rate =",
       )
 ```
 
+The estimated regression equation is: "Fertility_Rate = 2.981 + 0.036 * Poverty_Rate"
+where: 2.981 (intercept) represents the predicted fertility rate when the extreme poverty rate is zero.
+0.036 (slope) represents the expected increase in fertility rate for a increase in extreme poverty rate. The intercept suggests that even in the absence of extreme poverty, fertility rates are still about 3 children. The slope coefficient indicates that as extreme poverty increases by 1 percentage, the fertility rate is expected to increase by 0.036 children per woman.
 
 ## Model Fit
 
 ```{r}
+#| code-fold: true
 var_in_response <- var(clean_data2$mean_fertility)
 var_in_fitted <- var(fitted(slr_model))
 var_in_residuals <- var(slr_model$residuals)
@@ -146,6 +153,4 @@ print(variation_table)
 
 ```
 
-
-
-
+The proportion of variability (R^2) is calculated by 0.3640/0.8558 = 0.425. This suggests that about 42.5% of the variation in fertility rates can be explained by extreme poverty. The remaining variation is most likely influenced by other socioeconomic and cultural factors not included in this model.
