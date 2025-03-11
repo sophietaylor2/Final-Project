@@ -27,13 +27,14 @@ library(readr)
 library(gganimate)
 library(gifski)
 library(knitr)
+library(gridExtra)
 
-data_children_per_woman <- read_csv("/Users/sophietaylor/Documents/STAT 331/children_per_woman_total_fertility.csv") |>
+data_children_per_woman <- read_csv("children_per_woman_total_fertility.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "children_per_woman")
 
-data_extreme_poverty_rate <- read_csv("/Users/sophietaylor/Documents/STAT 331/gm_epov_rate.csv") |>
+data_extreme_poverty_rate <- read_csv("gm_epov_rate.csv") |>
   pivot_longer(cols = "1800":"2100",
                names_to = "year",
                values_to = "extreme_poverty_rate")
@@ -139,7 +140,10 @@ where: 2.981 (intercept) represents the predicted fertility rate when the extrem
 ## Model Fit
 
 ```{r}
+#| label: variation-table
 #| code-fold: true
+#| code-summary: "Show variation-table code"
+
 var_in_response <- var(clean_data2$mean_fertility)
 var_in_fitted <- var(fitted(slr_model))
 var_in_residuals <- var(slr_model$residuals)
@@ -150,7 +154,81 @@ variation_table <- data.frame(
   )
 
 print(variation_table)
-
 ```
 
 The proportion of variability (R^2) is calculated by 0.3640/0.8558 = 0.425. This suggests that about 42.5% of the variation in fertility rates can be explained by extreme poverty. The remaining variation is most likely influenced by other socioeconomic and cultural factors not included in this model.
+
+## Visualising Model Simulations
+
+```{r, (1,2)}
+#| label: simulated-data-comparison
+#| code-fold: true
+#| code-summary: "Show simulated-data-comparison code"
+
+set.seed(33498)
+
+simulated_data <- predict(object = slr_model)+ 
+  rnorm(192, mean = 0, sd = sigma(slr_model))
+
+simulated_poverty_vs_fertility_rates <- clean_data2 |>
+  mutate(simulated_fertility = simulated_data) |>
+  ggplot(mapping = aes(x = mean_poverty,
+                       y = simulated_fertility)
+         ) +
+  geom_point() +
+  theme_light()+
+  labs(title = "Extreme Poverty vs. Simulated Womens Fertility",
+       subtitle = "Simulated Fertility Rate (children per woman)",
+       x = "Extreme Poverty Rate (%)",
+       y = "")
+
+grid.arrange(poverty_vs_fertility_rates, simulated_poverty_vs_fertility_rates, ncol = 2)
+
+
+  
+```
+
+
+## Generating Multiple Predictive Checks
+
+```{r}
+#| label: simulated-datasets-regression-comparison
+#| code-fold: true
+#| code-summary: "Show simulated-datasets-regression-comparison code"
+
+set.seed(33498)
+
+generate_and_regress <- function(observed = clean_data2) {
+  simulated_data <- predict(object = slr_model) + 
+    rnorm(192, mean = 0, sd = sigma(slr_model))
+  
+  simulated_dataset <- observed |> 
+    mutate(simulated_fertility = simulated_data)
+  
+  regression <- lm(simulated_dataset$mean_fertility ~
+                     simulated_dataset$simulated_fertility)
+  
+  summary <- summary(regression)
+  
+  return(summary$r.squared)
+}
+
+simulated_rsquared_values <- 
+  tibble(person = 1:1000,
+         rsquared = map_dbl(.x = 1:1000, 
+                            .f = ~generate_and_regress()
+                            )
+         ) |>
+  ggplot(aes(x = rsquared))+
+  geom_histogram()+
+  labs(title = "Distribution of Regression on Observed vs. Simulated Datasets",
+       subtitle = "Counts",
+       x = "R-Squared Values",
+       y = "")+
+  theme_light()
+
+plot(simulated_rsquared_values)
+
+```
+
+## Conclusion
